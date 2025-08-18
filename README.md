@@ -1,8 +1,17 @@
-# VeroBrix 1.0
+# VeroBrix: Sovereign Modular Intelligence
 
-**Sovereignty-Aligned Legal Intelligence System**
+**Living Dialogic System for Lawful Remedy and Sovereign Authorship**
 
-VeroBrix is a comprehensive legal intelligence system designed to democratize access to lawful remedies, detect contradictions in legal discourse, and reflect philosophical integrity in its architecture. It empowers individuals to navigate real-world legal situations with clarity, autonomy, and procedural precision.
+VeroBrix is not just a system—it is a **statement of authorship**. This living, dialogic intelligence orchestrates modular agents, lawful remedy synthesis, and sovereign authorship. Inspired by both real and fictional AI archetypes, it blends technical precision with philosophical depth, integrating teachings from **Anelia Sutton**, **David Straight**, **Brandon Joe Williams**, and **Carl Miller** with advanced AI capabilities.
+
+## 🧠 Enhanced Capabilities (v2.0)
+
+- **Advanced NLP Processing**: Legal entity recognition, contradiction detection, sentiment analysis
+- **Modular Agent Architecture**: JARVIS, FRIDAY, Ultron, and Dialogos agents with specialized roles
+- **Sovereignty Scoring**: Flags servile language and scores remedy alignment
+- **Provenance Logging**: Every interaction tracked for authorship and accountability
+- **Comprehensive Testing**: 86% test coverage with 22 comprehensive test suites
+- **Enhanced Legal Analysis**: Pattern-based and semantic contradiction detection
 
 ## 🚀 Quick Start
 

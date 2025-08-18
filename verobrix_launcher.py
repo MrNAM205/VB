@@ -11,10 +11,15 @@ from agents.JARVIS.jarvis_agent import extract_clauses, detect_contradictions, a
 from agents.FRIDAY.friday_agent import interpret_tone, suggest_remedy, analyze_legal_risk, generate_legal_summary, log_provenance
 from modules.remedy_synthesizer import RemedySynthesizer
 from modules.situation_interpreter import SituationInterpreter
+from modules.provenance_logger import get_provenance_logger, log_provenance as log_provenance_entry
+from modules.sovereignty_scorer import get_sovereignty_scorer, score_sovereignty
 
 class VeroBrixSystem:
     """
-    Enhanced VeroBrix system that integrates all modules for comprehensive legal analysis.
+    Enhanced VeroBrix Sovereign Modular Intelligence System.
+    
+    Integrates all modules for comprehensive legal analysis with
+    provenance logging and sovereignty scoring capabilities.
     """
     
     def __init__(self):
@@ -22,9 +27,21 @@ class VeroBrixSystem:
         self.situation_interpreter = SituationInterpreter()
         self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
         
+        # Initialize sovereign architecture components
+        self.provenance_logger = get_provenance_logger()
+        self.sovereignty_scorer = get_sovereignty_scorer()
+        
         # Ensure output directories exist
         os.makedirs("logs", exist_ok=True)
         os.makedirs("output", exist_ok=True)
+        os.makedirs("logs/provenance", exist_ok=True)
+        
+        # Log system initialization with provenance
+        self.provenance_logger.log_action(
+            action_type="system_init",
+            action_description=f"VeroBrix Sovereign Intelligence System initialized - Session: {self.session_id}",
+            agent_name="VeroBrixSystem"
+        )
         
         log_provenance("VeroBrix System", f"Initialized new session: {self.session_id}")
     
@@ -66,8 +83,18 @@ class VeroBrixSystem:
         log_provenance("VeroBrix System", "Step 6: Generating legal summary with FRIDAY")
         legal_summary = generate_legal_summary(input_text, tone_analysis, legal_risks)
         
-        # Step 7: Synthesize remedy
-        log_provenance("VeroBrix System", "Step 7: Synthesizing remedy")
+        # Step 7: Sovereignty scoring analysis
+        self.provenance_logger.log_action(
+            action_type="sovereignty_analysis",
+            action_description="Analyzing sovereignty alignment of input text",
+            agent_name="SovereigntyScorer",
+            input_data=input_text[:200] + "..." if len(input_text) > 200 else input_text
+        )
+        
+        sovereignty_metrics = self.sovereignty_scorer.score_text(input_text, context="legal_document")
+        
+        # Step 8: Synthesize remedy
+        log_provenance("VeroBrix System", "Step 8: Synthesizing remedy")
         remedy_input = {
             'type': situation['type'],
             'risk_level': legal_summary['risk_level'],
@@ -80,10 +107,31 @@ class VeroBrixSystem:
         
         remedy = self.remedy_synthesizer.synthesize_remedy(remedy_input)
         
+        # Score the remedy for sovereignty alignment
+        remedy_sovereignty = self.sovereignty_scorer.score_decision({
+            'description': remedy.get('description', ''),
+            'reasoning': remedy.get('reasoning', ''),
+            'recommendations': remedy.get('legal_strategies', []),
+            'remedy_type': remedy.get('type', 'unknown')
+        })
+        
+        # Log comprehensive provenance entry
+        self.provenance_logger.log_action(
+            action_type="analysis_complete",
+            action_description="Comprehensive VeroBrix analysis completed",
+            agent_name="VeroBrixSystem",
+            input_data={"text_length": len(input_text), "situation_type": situation['type']},
+            output_data={"sovereignty_score": sovereignty_metrics.overall_score, "remedy_score": remedy_sovereignty.overall_score},
+            sovereignty_score=sovereignty_metrics.overall_score,
+            confidence_level=0.9,
+            legal_context=situation['jurisdiction']['primary']
+        )
+        
         # Compile comprehensive results
         results = {
             'session_id': self.session_id,
             'timestamp': datetime.now().isoformat(),
+            'system_version': 'VeroBrix v2.0 - Sovereign Modular Intelligence',
             'input': {
                 'raw_text': input_text,
                 'context': situation_context
@@ -97,8 +145,28 @@ class VeroBrixSystem:
                 'legal_risks': legal_risks,
                 'legal_summary': legal_summary
             },
+            'sovereignty_analysis': {
+                'input_sovereignty': {
+                    'overall_score': sovereignty_metrics.overall_score,
+                    'language_score': sovereignty_metrics.language_score,
+                    'remedy_score': sovereignty_metrics.remedy_score,
+                    'autonomy_score': sovereignty_metrics.autonomy_score,
+                    'sovereignty_level': sovereignty_metrics.sovereignty_level,
+                    'servile_flags_count': len(sovereignty_metrics.servile_flags),
+                    'sovereign_indicators_count': len(sovereignty_metrics.sovereign_indicators),
+                    'improvement_suggestions': sovereignty_metrics.improvement_suggestions
+                },
+                'remedy_sovereignty': {
+                    'overall_score': remedy_sovereignty.overall_score,
+                    'language_score': remedy_sovereignty.language_score,
+                    'remedy_score': remedy_sovereignty.remedy_score,
+                    'autonomy_score': remedy_sovereignty.autonomy_score,
+                    'sovereignty_level': remedy_sovereignty.sovereignty_level,
+                    'improvement_suggestions': remedy_sovereignty.improvement_suggestions
+                }
+            },
             'remedy': remedy,
-            'recommendations': self._generate_recommendations(situation, legal_summary, remedy)
+            'recommendations': self._generate_recommendations(situation, legal_summary, remedy, sovereignty_metrics)
         }
         
         # Save results
@@ -107,15 +175,31 @@ class VeroBrixSystem:
         log_provenance("VeroBrix System", "Comprehensive analysis completed")
         return results
     
-    def _generate_recommendations(self, situation: dict, legal_summary: dict, remedy: dict) -> dict:
-        """Generate prioritized recommendations based on analysis."""
+    def _generate_recommendations(self, situation: dict, legal_summary: dict, remedy: dict, sovereignty_metrics=None) -> dict:
+        """Generate prioritized recommendations based on analysis including sovereignty considerations."""
         recommendations = {
             'immediate_actions': [],
             'short_term_actions': [],
             'long_term_actions': [],
             'warnings': [],
-            'opportunities': []
+            'opportunities': [],
+            'sovereignty_improvements': []
         }
+        
+        # Sovereignty-based recommendations
+        if sovereignty_metrics:
+            if sovereignty_metrics.sovereignty_level == "Servile":
+                recommendations['warnings'].append('SOVEREIGNTY WARNING: Language contains servile patterns')
+                recommendations['sovereignty_improvements'].extend(sovereignty_metrics.improvement_suggestions)
+            elif sovereignty_metrics.sovereignty_level == "Transitional":
+                recommendations['opportunities'].append('SOVEREIGNTY OPPORTUNITY: Language shows transitional sovereignty - can be improved')
+                recommendations['sovereignty_improvements'].extend(sovereignty_metrics.improvement_suggestions[:3])
+            else:
+                recommendations['opportunities'].append('SOVEREIGNTY STRENGTH: Language demonstrates sovereign principles')
+            
+            # Add specific sovereignty score warnings
+            if sovereignty_metrics.overall_score < 0.4:
+                recommendations['immediate_actions'].append('CRITICAL: Review language for servile patterns and replace with sovereign alternatives')
         
         # Immediate actions based on urgency
         if situation['urgency']['level'] == 'high':
@@ -188,17 +272,34 @@ class VeroBrixSystem:
         return self.remedy_synthesizer.get_available_templates()
     
     def print_analysis_summary(self, results: dict):
-        """Print a formatted summary of the analysis results."""
+        """Print a formatted summary of the analysis results including sovereignty analysis."""
         print("\n" + "="*60)
-        print("VEROBRIX LEGAL ANALYSIS SUMMARY")
+        print("VEROBRIX SOVEREIGN INTELLIGENCE ANALYSIS")
         print("="*60)
         
         # Basic information
         print(f"Session ID: {results['session_id']}")
+        print(f"System Version: {results.get('system_version', 'VeroBrix v2.0')}")
         print(f"Analysis Time: {results['timestamp']}")
         print(f"Situation Type: {results['situation_analysis']['type'].upper()}")
         print(f"Risk Level: {results['legal_analysis']['legal_summary']['risk_level']}")
         print(f"Urgency: {results['situation_analysis']['urgency']['level'].upper()}")
+        
+        # Sovereignty Analysis
+        if 'sovereignty_analysis' in results:
+            sovereignty = results['sovereignty_analysis']['input_sovereignty']
+            print(f"\n🏛️  SOVEREIGNTY ANALYSIS:")
+            print(f"Sovereignty Level: {sovereignty['sovereignty_level']}")
+            print(f"Overall Score: {sovereignty['overall_score']:.2f}/1.00")
+            print(f"Language Score: {sovereignty['language_score']:.2f}/1.00")
+            print(f"Remedy Score: {sovereignty['remedy_score']:.2f}/1.00")
+            print(f"Autonomy Score: {sovereignty['autonomy_score']:.2f}/1.00")
+            
+            if sovereignty['servile_flags_count'] > 0:
+                print(f"⚠️  Servile Language Flags: {sovereignty['servile_flags_count']}")
+            
+            if sovereignty['sovereign_indicators_count'] > 0:
+                print(f"✅ Sovereign Indicators: {sovereignty['sovereign_indicators_count']}")
         
         # Jurisdiction
         jurisdiction = results['situation_analysis']['jurisdiction']
