@@ -1,3 +1,0 @@
-[2025-08-15 10:26:26.048271] AuditTrail agent initialized.
-[2025-08-15 10:26:26.048390] Logging provenance: File 'document.txt' created by User A.
-[2025-08-15 10:26:26.048432] Applying version overlay to document.txt with info: v1.0
